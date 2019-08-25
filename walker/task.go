@@ -1,22 +1,33 @@
 package walker
 
-/**
-walker package is not completed!!
-
-The goal is walk the Terraform files and verify the value of each attribue.
-**/
+import (
+	log "github.com/sirupsen/logrus"
+	"gopkg.in/yaml.v3"
+)
 
 type Task struct {
 	Resource     string
 	AttibuteKeys map[string][]string
-	Errors       []string
-	Error        error
-	Scores       map[string]bool
 }
 
-func NewTask(res string, attibutes map[string][]string) *Task {
-	return &Task{
-		Resource:     res,
-		AttibuteKeys: attibutes,
+func PrepareTask(data []byte) ([]*Task, error) {
+	var t map[string]map[string][]string
+	var tasks []*Task
+	err := yaml.Unmarshal([]byte(data), &t)
+	if err != nil {
+		return nil, err
 	}
+	for key, value := range t {
+		for k, v := range value {
+			var newTask Task
+			newTask.Resource = key
+			newTask.AttibuteKeys = make(map[string][]string)
+			newTask.AttibuteKeys[k] = v
+			tasks = append(tasks, &newTask)
+			log.Infof("inside PrepareTask  %v \n", newTask)
+		}
+
+	}
+	return tasks, nil
+
 }

@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -11,15 +12,22 @@ import (
 	"github.com/shoukoo/tf-verifier/walker"
 
 	log "github.com/sirupsen/logrus"
+	"gopkg.in/alecthomas/kingpin.v2"
+)
+
+var (
+	debug = kingpin.Flag("debug", "Enable debug mode.").Bool()
+	file  = kingpin.Arg("config", "Custom config file (default is tf.yaml)").String()
 )
 
 func init() {
-	// Output to stdout instead of the default stderr
-	// Can be any io.Writer, see below for File example
+	kingpin.Version("0.0.1")
+	kingpin.Parse()
 	log.SetOutput(os.Stdout)
-
-	// Only log the warning severity or above.
 	log.SetLevel(log.WarnLevel)
+	if *debug {
+		log.SetLevel(log.DebugLevel)
+	}
 }
 
 func main() {
@@ -28,7 +36,7 @@ func main() {
 
 	pwd, err := os.Getwd()
 	if err != nil {
-		log.Fatalf("Error getting current directory%e", err)
+		log.Fatalf("Error getting current directory %e", err)
 	}
 
 	// Walk through all files and subdirectories
@@ -47,16 +55,25 @@ func main() {
 		return nil
 	})
 
-	if err != nil && len(files) == 0 {
+	if err != nil || len(files) == 0 {
 		log.Fatalf("Error walking through current directory or cannot find any terraform file %e", err)
 	}
 
 	// Prepare tasks
-	tasks := []*walker.Task{}
-	att := map[string][]string{
-		"tags": []string{"Name", "terraform"},
+	conf := "tf.yaml"
+	if file != nil {
+		conf = *file
 	}
-	tasks = append(tasks, walker.NewTask("aws_instance", att))
+	log.Infof("** Parsing Config %v **", conf)
+	b, err := ioutil.ReadFile(conf)
+	if err != nil {
+		log.Fatalf("Cannot find config file %v", err)
+	}
+
+	tasks, err := walker.PrepareTask(b)
+	if err != nil {
+		log.Fatalf("Error preparing task %v", err)
+	}
 
 	var errStr []string
 	for _, path := range files {

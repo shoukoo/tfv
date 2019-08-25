@@ -1,0 +1,7 @@
+aws_instance:
+  tags:
+    - Name
+    - terraform
+
+  volume_tags:
+

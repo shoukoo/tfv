@@ -81,6 +81,7 @@ func (w *Worker) ExpressionWalk(ex hcl.Expression) {
 
 func (w *Worker) ValidateScore() {
 	var err []string
+	log.Infof("Score!: %+v\n", w.Scores)
 	for key, value := range w.Scores {
 		if !value {
 			err = append(err, fmt.Sprintf("<%v %v> %v %v is missing ", w.Path,
