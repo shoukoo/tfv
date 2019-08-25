@@ -7,9 +7,9 @@ usage: main [<flags>] [<config>]
 
 Flags:
   --help     Show context-sensitive help (also try --help-long and --help-man).
-    --debug    Enable debug mode.
-	  --version  Show application version.
+  --debug    Enable debug mode.
+  --version  Show application version.
 
-	  Args:
-	    [<config>]  Custom config file (default is tf.yaml)
+  Args:
+	[<config>]  Custom config file (default is tf.yaml)
 ```		
