@@ -10,6 +10,6 @@ Flags:
   --debug    Enable debug mode.
   --version  Show application version.
 
-  Args:
-	[<config>]  Custom config file (default is tf.yaml)
+Args:
+  [<config>]  Custom config file (default is tf.yaml)
 ```		
