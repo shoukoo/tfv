@@ -61,7 +61,8 @@ func main() {
 
 	// Prepare tasks
 	conf := "tf.yaml"
-	if file != nil {
+	log.Infof("%+v\n", *file)
+	if *file != "" {
 		conf = *file
 	}
 	log.Infof("** Parsing Config %v **", conf)
