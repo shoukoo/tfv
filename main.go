@@ -1,73 +1,50 @@
 package main
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
-	"path/filepath"
 	"strings"
 
 	"github.com/hashicorp/hcl2/hcl/hclsyntax"
 	"github.com/hashicorp/hcl2/hclparse"
 	"github.com/shoukoo/tf-verifier/walker"
-
+	flags "github.com/simonleung8/flags"
 	log "github.com/sirupsen/logrus"
-	"gopkg.in/alecthomas/kingpin.v2"
 )
 
 var (
-	debug = kingpin.Flag("debug", "Enable debug mode.").Bool()
-	file  = kingpin.Arg("config", "Custom config file (default is tf.yaml)").String()
+	debug  bool
+	config string
+	files  []string
 )
 
 func init() {
-	kingpin.Version("0.0.1")
-	kingpin.Parse()
+	f := flags.New()
+	f.NewBoolFlag("debug", "d", "debug mode")
+	f.NewStringFlagWithDefault("config", "c", "config file", "tf.yaml")
+	f.Parse(os.Args...)
+
+	debug = f.Bool("d")
+	config = f.String("c")
+	files = f.Args()[1:]
+
 	log.SetOutput(os.Stdout)
 	log.SetLevel(log.WarnLevel)
-	if *debug {
+	if debug {
 		log.SetLevel(log.DebugLevel)
 	}
 }
 
 func main() {
 
-	var files []string
-
-	pwd, err := os.Getwd()
-	if err != nil {
-		log.Fatalf("Error getting current directory %e", err)
-	}
-
-	// Walk through all files and subdirectories
-	err = filepath.Walk(pwd, func(path string, info os.FileInfo, err error) error {
-
-		// Ignore hidden files e.g. .terraform
-		if info.IsDir() && strings.HasPrefix(info.Name(), ".") {
-			return filepath.SkipDir
-		}
-
-		// Only includes terraform file
-		if filepath.Ext(info.Name()) == ".tf" {
-			files = append(files, path)
-		}
-
-		return nil
-	})
-
-	if err != nil || len(files) == 0 {
-		log.Fatalf("Error walking through current directory or cannot find any terraform file %e", err)
-	}
-
 	// Prepare tasks
-	conf := "tf.yaml"
-	if file != nil {
-		conf = *file
-	}
-	log.Infof("** Parsing Config %v **", conf)
-	b, err := ioutil.ReadFile(conf)
+	b, err := ioutil.ReadFile(config)
 	if err != nil {
-		log.Fatalf("Cannot find config file %v", err)
+		log.Fatalf("Can't find config file %s", err)
+	}
+
+	if len(files) == 0 {
+		log.Fatalf("List of files not found")
 	}
 
 	tasks, err := walker.PrepareTask(b)
@@ -75,32 +52,34 @@ func main() {
 		log.Fatalf("Error preparing task %v", err)
 	}
 
-	var errStr []string
-	for _, path := range files {
+	var errs []string
+	for _, f := range files {
+		path := string(f)
+		if _, err := os.Stat(path); err != nil {
+			log.Fatalf("File does not exist: %s", path)
+		}
+
+		log.Infof("Examining: %s", path)
 		p := hclparse.NewParser()
 		file, d := p.ParseHCLFile(path)
 
 		if d.HasErrors() {
-			log.Fatalf("%v Error hcl parsing %v", path, d.Error())
+			log.Fatalf("%v Error parsing %v", path, d.Error())
 		}
 
 		body, ok := file.Body.(*hclsyntax.Body)
 		if !ok {
-			log.Fatalf("%v Error parsing hck body %v", path, d.Error())
+			log.Fatalf("%v Error parsing %v", path, d.Error())
 		}
-
-		errStr = append(errStr, run(body, tasks, path)...)
-
+		e := run(body, tasks, path)
+		if len(e) > 0 {
+			errs = append(errs, strings.Join(e, "\n"))
+		}
 	}
 
-	if len(errStr) > 0 {
-		for _, e := range errStr {
-			log.Error(e)
-		}
-		log.Fatal("failed")
+	if len(errs) > 0 {
+		log.Fatalf("\n" + strings.Join(errs, "\n"))
 	}
-
-	fmt.Println("succeed!")
 }
 
 func run(body *hclsyntax.Body, tasks []*walker.Task, path string) []string {
