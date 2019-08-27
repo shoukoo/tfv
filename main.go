@@ -115,7 +115,7 @@ func run(body *hclsyntax.Body, tasks []*walker.Task, path string) []string {
 						// Deploy worker
 						worker := walker.NewWorker(
 							strings.Join(block.Labels, " "),
-							w.AttibuteKeys,
+							w.AttributeKeys,
 							path,
 						)
 						workers = append(workers, worker)
@@ -139,9 +139,9 @@ func run(body *hclsyntax.Body, tasks []*walker.Task, path string) []string {
 func verify(b *hclsyntax.Body, w *walker.Worker) {
 	if len(b.Attributes) > 0 {
 		for _, attr := range b.Attributes {
-			if w.Attibute == attr.Name {
+			if w.Attribute == attr.Name {
 				log.Infof("Found attribue %v\n", attr.Name)
-				w.Scores[w.Attibute] = true
+				w.Scores[w.Attribute] = true
 				w.ExpressionWalk(attr.Expr)
 			}
 		}
