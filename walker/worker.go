@@ -20,16 +20,16 @@ import (
 type Worker struct {
 	Path     string
 	Resource string
-	Attibute string
+	Attribute string
 	Errors   []string
 	Scores   map[string]bool
 }
 
-func NewWorker(res string, attibutes map[string][]string, path string) *Worker {
+func NewWorker(res string, attributes map[string][]string, path string) *Worker {
 	score := make(map[string]bool)
 	var att string
 
-	for attr, keys := range attibutes {
+	for attr, keys := range attributes {
 		score[attr] = false
 		att = attr
 		for _, i := range keys {
@@ -39,7 +39,7 @@ func NewWorker(res string, attibutes map[string][]string, path string) *Worker {
 
 	return &Worker{
 		Path:     path,
-		Attibute: att,
+		Attribute: att,
 		Resource: res,
 		Scores:   score,
 	}
@@ -85,7 +85,7 @@ func (w *Worker) ValidateScore() {
 	for key, value := range w.Scores {
 		if !value {
 			err = append(err, fmt.Sprintf("<%v %v> %v %v is missing ", w.Path,
-				w.Resource, key, w.Attibute))
+				w.Resource, key, w.Attribute))
 		}
 	}
 

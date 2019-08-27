@@ -7,7 +7,7 @@ import (
 
 type Task struct {
 	Resource     string
-	AttibuteKeys map[string][]string
+	AttributeKeys map[string][]string
 }
 
 func PrepareTask(data []byte) ([]*Task, error) {
@@ -21,8 +21,8 @@ func PrepareTask(data []byte) ([]*Task, error) {
 		for k, v := range value {
 			var newTask Task
 			newTask.Resource = key
-			newTask.AttibuteKeys = make(map[string][]string)
-			newTask.AttibuteKeys[k] = v
+			newTask.AttributeKeys = make(map[string][]string)
+			newTask.AttributeKeys[k] = v
 			tasks = append(tasks, &newTask)
 			log.Infof("inside PrepareTask  %v \n", newTask)
 		}
