@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -37,19 +38,9 @@ func init() {
 
 func main() {
 
-	// Prepare tasks
-	b, err := ioutil.ReadFile(config)
+	tasks, err := readConfig(config)
 	if err != nil {
-		log.Fatalf("Can't find config file %s", err)
-	}
-
-	if len(files) == 0 {
-		log.Fatalf("List of files not found")
-	}
-
-	tasks, err := walker.PrepareTask(b)
-	if err != nil {
-		log.Fatalf("Error preparing task %v", err)
+		log.Fatal(err)
 	}
 
 	var errs []string
@@ -82,6 +73,26 @@ func main() {
 	}
 }
 
+// readConfig to read config and generate tasks
+func readConfig(config string) ([]*walker.Task, error) {
+	b, err := ioutil.ReadFile(config)
+	if err != nil {
+		return nil, fmt.Errorf("Can't find config file %v", err)
+	}
+
+	if len(files) == 0 {
+		return nil, fmt.Errorf("List of files not found")
+	}
+
+	tasks, err := walker.PrepareTask(b)
+	if err != nil {
+		return nil, fmt.Errorf("Error preparing task %v", err)
+	}
+
+	return tasks, nil
+}
+
+// run to assign tasks to worker
 func run(body *hclsyntax.Body, tasks []*walker.Task, path string) []string {
 	var errStr []string
 	var workers []*walker.Worker
@@ -115,6 +126,7 @@ func run(body *hclsyntax.Body, tasks []*walker.Task, path string) []string {
 	return errStr
 }
 
+// verify goes through terraform file to look for attributes and keys
 func verify(b *hclsyntax.Body, w *walker.Worker) {
 	log.Infof("*Worker* starts to verify %+v\n", w)
 	if len(b.Blocks) > 0 {
