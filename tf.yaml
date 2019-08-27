@@ -3,5 +3,6 @@ aws_instance:
     - Name
     - terraform
 
-  volume_tags:
+  lifecycle:
+    - create_before_destroy
 

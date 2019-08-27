@@ -90,7 +90,7 @@ func run(body *hclsyntax.Body, tasks []*walker.Task, path string) []string {
 			if block.Type == "resource" && len(block.Labels) > 0 {
 				for _, w := range tasks {
 					if block.Labels[0] == w.Resource {
-						log.Infof("Found %v %+v \n", w.Resource, strings.Join(block.Labels, " "))
+						log.Infof("> Found %v %+v \n", w.Resource, strings.Join(block.Labels, " "))
 						// Deploy worker
 						worker := walker.NewWorker(
 							strings.Join(block.Labels, " "),
@@ -116,11 +116,23 @@ func run(body *hclsyntax.Body, tasks []*walker.Task, path string) []string {
 }
 
 func verify(b *hclsyntax.Body, w *walker.Worker) {
+	log.Infof("*Worker* starts to verify %+v\n", w)
+	if len(b.Blocks) > 0 {
+		for _, block := range b.Blocks {
+			if block.Type == w.Attribute {
+				log.Infof("> Found block %v\n", block.Type)
+				w.Scores[w.Attribute] = true
+				verify(block.Body, w)
+			}
+
+		}
+
+	}
 	if len(b.Attributes) > 0 {
 		for _, attr := range b.Attributes {
-			if w.Attribute == attr.Name {
-				log.Infof("Found attribue %v\n", attr.Name)
-				w.Scores[w.Attribute] = true
+			if _, ok := w.Scores[attr.Name]; ok {
+				log.Infof("> Found attribue %v\n", attr.Name)
+				w.Scores[attr.Name] = true
 				w.ExpressionWalk(attr.Expr)
 			}
 		}
