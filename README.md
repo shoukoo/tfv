@@ -1,15 +1,30 @@
-# Terraform Verifier 
-## This packge only check existance of the keys and attributes but not the value.
+# Terraform Verifier
+
+
+## HCL Syntax validation
+
+Performs a syntax check on a terraform HCL file, verifies that
+there are no parse errors. Works with terraform HCL syntax 0.12.
+
+
+## Check for missing keys
+
+Use a YAML configuration file to specify particular HCL key/values
+that you're expecting to find in the HCL file. This is useful for
+detecting commonly missing terraform attributes like eg: tags.
+
+
+## Build
 
 ```
-tf-verifier (master *%) go run main.go --help
-usage: main [<flags>] [<config>]
+git clone https://github.com/shoukoo/tf-verifier
+cd tf-verifier
+go build
+```
 
-Flags:
-  --help     Show context-sensitive help (also try --help-long and --help-man).
-  --debug    Enable debug mode.
-  --version  Show application version.
 
-Args:
-  [<config>]  Custom config file (default is tf.yaml)
-```		
+## Usage
+
+```
+tf-verifier --debug --config <tf.yaml> path/to/file1.tf path/to/morefiles.tf
+```
