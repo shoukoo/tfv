@@ -1,17 +1,17 @@
 # Terraform Verifier
 
 
-## HCL Syntax validation
+## HCL syntax validation
 
-Performs a syntax check on a terraform HCL file, verifies that
-there are no parse errors. Works with terraform HCL syntax 0.12.
+Perform a syntax check on a Terraform HCL file, verify that
+there are no parse errors. Works with Terraform HCL 0.12.
 
 
 ## Check for missing keys
 
 Use a YAML configuration file to specify particular HCL key/values
-that you're expecting to find in the HCL file. This is useful for
-detecting commonly missing terraform attributes like eg: tags.
+that you're expecting to find. This is useful for detecting
+commonly missing Terraform attributes like eg: tags.
 
 
 ## Build
@@ -26,5 +26,20 @@ go build
 ## Usage
 
 ```
-tf-verifier --debug --config <tf.yaml> path/to/file1.tf path/to/morefiles.tf
+tf-verifier --debug --config config.yaml path/to/file1.tf path/to/morefiles.tf
+```
+
+
+## Config syntax for config.yaml
+
+YAML syntax should mimic the layout of the HCL file, eg:
+
+```
+aws_instance:
+  tags:
+    - Name
+    - Service
+
+  volume_tags:
+    - Name
 ```
