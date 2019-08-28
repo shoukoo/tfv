@@ -38,9 +38,18 @@ func init() {
 
 func main() {
 
-	tasks, err := readConfig(config, files)
+	b, err := readConfig(config)
 	if err != nil {
 		log.Fatal(err)
+	}
+
+	tasks, err := getTasks(b)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if len(files) == 0 {
+		log.Fatal("List of terraform files not found")
 	}
 
 	var errs []string
@@ -73,16 +82,18 @@ func main() {
 	}
 }
 
-// readConfig to read config and generate tasks
-func readConfig(config string, files []string) ([]*walker.Task, error) {
+// readConfig to read config
+func readConfig(config string) ([]byte, error) {
 	b, err := ioutil.ReadFile(config)
 	if err != nil {
 		return nil, fmt.Errorf("Can't find config file %v", err)
 	}
 
-	if len(files) == 0 {
-		return nil, fmt.Errorf("List of files not found")
-	}
+	return b, nil
+}
+
+// getTasks creates task based on the config
+func getTasks(b []byte) ([]*walker.Task, error) {
 
 	tasks, err := walker.PrepareTask(b)
 	if err != nil {
@@ -92,7 +103,7 @@ func readConfig(config string, files []string) ([]*walker.Task, error) {
 	return tasks, nil
 }
 
-// run to assign tasks to worker
+// run to assign tasks to workers
 func run(body *hclsyntax.Body, tasks []*walker.Task, path string) []string {
 	var errStr []string
 	var workers []*walker.Worker

@@ -1,0 +1,8 @@
+aws_instance:
+  tags:
+    - Name
+    - terraform
+
+  lifecycle:
+    - create_before_destroy
+
