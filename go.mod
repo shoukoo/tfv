@@ -9,6 +9,7 @@ require (
 	github.com/hashicorp/hcl2 v0.0.0-20190809210004-72d32879a5c5
 	github.com/mattn/go-colorable v0.1.2 // indirect
 	github.com/mattn/go-isatty v0.0.9 // indirect
+	github.com/simonleung8/flags v0.0.0-20170704170018-8020ed7bcf1a
 	github.com/sirupsen/logrus v1.4.2
 	github.com/zclconf/go-cty v1.1.0
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
