@@ -18,11 +18,11 @@ import (
 )
 
 type Worker struct {
-	Path     string
-	Resource string
+	Path      string
+	Resource  string
 	Attribute string
-	Errors   []string
-	Scores   map[string]bool
+	Errors    []string
+	Scores    map[string]bool
 }
 
 func NewWorker(res string, attributes map[string][]string, path string) *Worker {
@@ -38,10 +38,10 @@ func NewWorker(res string, attributes map[string][]string, path string) *Worker 
 	}
 
 	return &Worker{
-		Path:     path,
+		Path:      path,
 		Attribute: att,
-		Resource: res,
-		Scores:   score,
+		Resource:  res,
+		Scores:    score,
 	}
 }
 
@@ -107,19 +107,19 @@ func (w *Worker) traverseTypeWalk(v hcl.Traverser) {
 func valueTypeWalk(t cty.Value) {
 	switch t.Type() {
 	case cty.String:
-		fmt.Printf("string type %v \n", t.AsString())
+		log.Infof("string type %v \n", t.AsString())
 	case cty.Number:
-		fmt.Printf("number type %v \n", t.AsBigFloat())
+		log.Infof("number type %v \n", t.AsBigFloat())
 	case cty.Bool:
-		fmt.Printf("boolean type %v \n", t.True())
+		log.Infof("boolean type %v \n", t.True())
 	case cty.EmptyObject:
-		fmt.Printf("empty object type %v \n", t)
+		log.Infof("empty object type %v \n", t)
 	case cty.DynamicPseudoType:
-		fmt.Printf("empty dynamic pseudo type %v \n", t)
+		log.Infof("empty dynamic pseudo type %v \n", t)
 	case cty.EmptyTuple:
-		fmt.Printf("empty tuple type %v \n", t)
+		log.Infof("empty tuple type %v \n", t)
 	default:
-		fmt.Printf(color.RedString("unknown value type %v\n"), reflect.TypeOf(t))
+		log.Infof(color.RedString("unknown value type %v\n"), reflect.TypeOf(t))
 	}
 }
 
