@@ -38,7 +38,7 @@ func init() {
 
 func main() {
 
-	tasks, err := readConfig(config)
+	tasks, err := readConfig(config, files)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -74,7 +74,7 @@ func main() {
 }
 
 // readConfig to read config and generate tasks
-func readConfig(config string) ([]*walker.Task, error) {
+func readConfig(config string, files []string) ([]*walker.Task, error) {
 	b, err := ioutil.ReadFile(config)
 	if err != nil {
 		return nil, fmt.Errorf("Can't find config file %v", err)
