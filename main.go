@@ -52,29 +52,18 @@ func main() {
 		log.Fatal("List of terraform files not found")
 	}
 
+	bodies, err := getHCLBodies(files)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	var errs []string
-	for _, f := range files {
-		path := string(f)
-		if _, err := os.Stat(path); err != nil {
-			log.Fatalf("File does not exist: %s", path)
-		}
-
-		log.Infof("Examining: %s", path)
-		p := hclparse.NewParser()
-		file, d := p.ParseHCLFile(path)
-
-		if d.HasErrors() {
-			log.Fatalf("%v Error parsing %v", path, d.Error())
-		}
-
-		body, ok := file.Body.(*hclsyntax.Body)
-		if !ok {
-			log.Fatalf("%v Error parsing %v", path, d.Error())
-		}
-		e := run(body, tasks, path)
+	for _, b := range bodies {
+		e := run(b.body, tasks, b.path)
 		if len(e) > 0 {
 			errs = append(errs, strings.Join(e, "\n"))
 		}
+
 	}
 
 	if len(errs) > 0 {
@@ -101,6 +90,39 @@ func getTasks(b []byte) ([]*walker.Task, error) {
 	}
 
 	return tasks, nil
+}
+
+// hclbody struct allow to hold additional information like path
+type hclBody struct {
+	path string
+	body *hclsyntax.Body
+}
+
+// getHCLBodies parses terraform file
+func getHCLBodies(files []string) ([]hclBody, error) {
+	var bodies []hclBody
+	for _, f := range files {
+		path := string(f)
+		if _, err := os.Stat(path); err != nil {
+			return nil, fmt.Errorf("File does not exist: %s", path)
+		}
+
+		log.Infof("Examining: %s", path)
+		p := hclparse.NewParser()
+		file, d := p.ParseHCLFile(path)
+
+		if d.HasErrors() {
+			return nil, fmt.Errorf("%v Error parsing %v", path, d.Error())
+		}
+
+		body, ok := file.Body.(*hclsyntax.Body)
+		if !ok {
+			return nil, fmt.Errorf("%v Error parsing %v", path, d.Error())
+		}
+		bodies = append(bodies, hclBody{path: path, body: body})
+	}
+
+	return bodies, nil
 }
 
 // run to assign tasks to workers
