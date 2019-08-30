@@ -9,7 +9,7 @@ there are no parse errors. Works with Terraform HCL 0.12.
 
 ## Check for missing keys
 
-Use a YAML configuration file to specify particular HCL key/values
+Use a YAML configuration file to specify particular HCL key/attributes
 that you're expecting to find. This is useful for detecting
 commonly missing Terraform attributes like eg: tags.
 
@@ -27,6 +27,11 @@ go build
 
 ```
 tf-verifier --debug --config config.yaml path/to/file1.tf path/to/morefiles.tf
+```
+
+## Example
+```
+go run main.go --config tfv.yaml test/terraform.tf test/terraform12.tf
 ```
 
 
