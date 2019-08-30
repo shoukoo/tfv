@@ -1,6 +1,7 @@
 #!/bin/sh
 
-set -exuo pipeline
+set -exuo pipefail
 
 export GO111MODULE=on
+ls -al
 make test
