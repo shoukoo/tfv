@@ -1,4 +1,4 @@
-package walker
+package parser
 
 /**
 walker package is not completed!!
@@ -9,6 +9,7 @@ The goal is walk the Terraform files and verify the value of each attribue.
 import (
 	"fmt"
 	"reflect"
+	"strings"
 
 	"github.com/fatih/color"
 	"github.com/hashicorp/hcl2/hcl"
@@ -18,14 +19,15 @@ import (
 )
 
 type Worker struct {
-	Path     string
-	Resource string
+	Path      string
+	Resource  string
 	Attribute string
-	Errors   []string
-	Scores   map[string]bool
+	Errors    []string
+	Scores    map[string]bool
+	Body      *hclsyntax.Body // Worker needs to review this body
 }
 
-func NewWorker(res string, attributes map[string][]string, path string) *Worker {
+func NewWorker(body *hclsyntax.Body, res string, attributes map[string][]string, path string) *Worker {
 	score := make(map[string]bool)
 	var att string
 
@@ -38,10 +40,79 @@ func NewWorker(res string, attributes map[string][]string, path string) *Worker 
 	}
 
 	return &Worker{
-		Path:     path,
+		Path:      path,
 		Attribute: att,
-		Resource: res,
-		Scores:   score,
+		Resource:  res,
+		Scores:    score,
+		Body:      body,
+	}
+}
+
+func GenerateWorkers(body *hclsyntax.Body, tasks []*Task, path string) []*Worker {
+	var workers []*Worker
+	if len(body.Blocks) > 0 {
+		for _, block := range body.Blocks {
+			if block.Type == "resource" && len(block.Labels) > 0 {
+				for _, w := range tasks {
+					if block.Labels[0] == w.Resource {
+						log.Infof("> Found %v %+v \n", w.Resource, strings.Join(block.Labels, " "))
+						// Deploy worker
+						worker := NewWorker(
+							block.Body,
+							strings.Join(block.Labels, " "),
+							w.AttributeKeys,
+							path,
+						)
+						workers = append(workers, worker)
+					}
+				}
+			}
+		}
+	}
+
+	return workers
+}
+
+// ValidateScore check if attributes and keys exist
+func (w *Worker) ValidateScore() {
+	var err []string
+	log.Infof("Score!: %+v\n", w.Scores)
+	for key, value := range w.Scores {
+		if !value {
+			if key == w.Attribute {
+				key = "attribute"
+			}
+			err = append(err, fmt.Sprintf("<%v %v> %v %v is missing ", w.Path,
+				w.Resource, key, w.Attribute))
+		}
+	}
+
+	w.Errors = err
+}
+
+// Verify goes through terraform file to look for attributes and keys
+func (w *Worker) VerifyBody() {
+	log.Infof("*Worker* starts to verify %+v\n", w)
+	if len(w.Body.Blocks) > 0 {
+		for _, block := range w.Body.Blocks {
+			if block.Type == w.Attribute {
+				log.Infof("> Found block %v\n", block.Type)
+				w.Scores[w.Attribute] = true
+				w.Body = block.Body
+				w.VerifyBody()
+			}
+
+		}
+	}
+
+	if len(w.Body.Attributes) > 0 {
+		for _, attr := range w.Body.Attributes {
+			if _, ok := w.Scores[attr.Name]; ok {
+				log.Infof("> Found attribue %v\n", attr.Name)
+				w.Scores[attr.Name] = true
+				w.ExpressionWalk(attr.Expr)
+			}
+		}
 	}
 }
 
@@ -79,19 +150,6 @@ func (w *Worker) ExpressionWalk(ex hcl.Expression) {
 	}
 }
 
-func (w *Worker) ValidateScore() {
-	var err []string
-	log.Infof("Score!: %+v\n", w.Scores)
-	for key, value := range w.Scores {
-		if !value {
-			err = append(err, fmt.Sprintf("<%v %v> %v %v is missing ", w.Path,
-				w.Resource, key, w.Attribute))
-		}
-	}
-
-	w.Errors = err
-}
-
 func (w *Worker) traverseTypeWalk(v hcl.Traverser) {
 	switch t := v.(type) {
 	case hcl.TraverseRoot:
@@ -107,19 +165,19 @@ func (w *Worker) traverseTypeWalk(v hcl.Traverser) {
 func valueTypeWalk(t cty.Value) {
 	switch t.Type() {
 	case cty.String:
-		fmt.Printf("string type %v \n", t.AsString())
+		log.Infof("string type %v \n", t.AsString())
 	case cty.Number:
-		fmt.Printf("number type %v \n", t.AsBigFloat())
+		log.Infof("number type %v \n", t.AsBigFloat())
 	case cty.Bool:
-		fmt.Printf("boolean type %v \n", t.True())
+		log.Infof("boolean type %v \n", t.True())
 	case cty.EmptyObject:
-		fmt.Printf("empty object type %v \n", t)
+		log.Infof("empty object type %v \n", t)
 	case cty.DynamicPseudoType:
-		fmt.Printf("empty dynamic pseudo type %v \n", t)
+		log.Infof("empty dynamic pseudo type %v \n", t)
 	case cty.EmptyTuple:
-		fmt.Printf("empty tuple type %v \n", t)
+		log.Infof("empty tuple type %v \n", t)
 	default:
-		fmt.Printf(color.RedString("unknown value type %v\n"), reflect.TypeOf(t))
+		log.Infof(color.RedString("unknown value type %v\n"), reflect.TypeOf(t))
 	}
 }
 
