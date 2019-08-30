@@ -6,9 +6,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/hashicorp/hcl2/hcl/hclsyntax"
-	"github.com/hashicorp/hcl2/hclparse"
-	"github.com/shoukoo/tf-verifier/walker"
+	"github.com/shoukoo/tf-verifier/parser"
 	flags "github.com/simonleung8/flags"
 	log "github.com/sirupsen/logrus"
 )
@@ -43,7 +41,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	tasks, err := getTasks(b)
+	tasks, err := parser.GenerateTasks(b)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -52,18 +50,24 @@ func main() {
 		log.Fatal("List of terraform files not found")
 	}
 
-	bodies, err := getHCLBodies(files)
+	bodies, err := parser.GetBodies(files)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	var errs []string
+	var workers []*parser.Worker
 	for _, b := range bodies {
-		e := run(b.body, tasks, b.path)
-		if len(e) > 0 {
-			errs = append(errs, strings.Join(e, "\n"))
-		}
+		ws := parser.GenerateWorkers(b.Body, tasks, b.Path)
+		workers = append(workers, ws...)
+	}
 
+	var errs []string
+	for _, w := range workers {
+		w.VerifyBody()
+		w.ValidateScore()
+		if len(w.Errors) > 0 {
+			errs = append(errs, strings.Join(w.Errors, "\n"))
+		}
 	}
 
 	if len(errs) > 0 {
@@ -79,107 +83,4 @@ func readConfig(config string) ([]byte, error) {
 	}
 
 	return b, nil
-}
-
-// getTasks creates task based on the config
-func getTasks(b []byte) ([]*walker.Task, error) {
-
-	tasks, err := walker.PrepareTask(b)
-	if err != nil {
-		return nil, fmt.Errorf("Error preparing task %v", err)
-	}
-
-	return tasks, nil
-}
-
-// hclbody struct allow to hold additional information like path
-type hclBody struct {
-	path string
-	body *hclsyntax.Body
-}
-
-// getHCLBodies parses terraform file
-func getHCLBodies(files []string) ([]hclBody, error) {
-	var bodies []hclBody
-	for _, f := range files {
-		path := string(f)
-		if _, err := os.Stat(path); err != nil {
-			return nil, fmt.Errorf("File does not exist: %s", path)
-		}
-
-		log.Infof("Examining: %s", path)
-		p := hclparse.NewParser()
-		file, d := p.ParseHCLFile(path)
-
-		if d.HasErrors() {
-			return nil, fmt.Errorf("%v Error parsing %v", path, d.Error())
-		}
-
-		body, ok := file.Body.(*hclsyntax.Body)
-		if !ok {
-			return nil, fmt.Errorf("%v Error parsing %v", path, d.Error())
-		}
-		bodies = append(bodies, hclBody{path: path, body: body})
-	}
-
-	return bodies, nil
-}
-
-// run to assign tasks to workers
-func run(body *hclsyntax.Body, tasks []*walker.Task, path string) []string {
-	var errStr []string
-	var workers []*walker.Worker
-	if len(body.Blocks) > 0 {
-		for _, block := range body.Blocks {
-			if block.Type == "resource" && len(block.Labels) > 0 {
-				for _, w := range tasks {
-					if block.Labels[0] == w.Resource {
-						log.Infof("> Found %v %+v \n", w.Resource, strings.Join(block.Labels, " "))
-						// Deploy worker
-						worker := walker.NewWorker(
-							strings.Join(block.Labels, " "),
-							w.AttributeKeys,
-							path,
-						)
-						workers = append(workers, worker)
-						verify(block.Body, worker)
-						worker.ValidateScore()
-					}
-				}
-			}
-		}
-	}
-
-	for _, w := range workers {
-		for _, e := range w.Errors {
-			errStr = append(errStr, e)
-		}
-	}
-
-	return errStr
-}
-
-// verify goes through terraform file to look for attributes and keys
-func verify(b *hclsyntax.Body, w *walker.Worker) {
-	log.Infof("*Worker* starts to verify %+v\n", w)
-	if len(b.Blocks) > 0 {
-		for _, block := range b.Blocks {
-			if block.Type == w.Attribute {
-				log.Infof("> Found block %v\n", block.Type)
-				w.Scores[w.Attribute] = true
-				verify(block.Body, w)
-			}
-
-		}
-
-	}
-	if len(b.Attributes) > 0 {
-		for _, attr := range b.Attributes {
-			if _, ok := w.Scores[attr.Name]; ok {
-				log.Infof("> Found attribue %v\n", attr.Name)
-				w.Scores[attr.Name] = true
-				w.ExpressionWalk(attr.Expr)
-			}
-		}
-	}
 }

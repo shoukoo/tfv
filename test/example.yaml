@@ -5,4 +5,3 @@ aws_instance:
 
   lifecycle:
     - create_before_destroy
-

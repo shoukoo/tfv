@@ -1,4 +1,4 @@
-package walker
+package parser
 
 /**
 walker package is not completed!!
@@ -9,6 +9,7 @@ The goal is walk the Terraform files and verify the value of each attribue.
 import (
 	"fmt"
 	"reflect"
+	"strings"
 
 	"github.com/fatih/color"
 	"github.com/hashicorp/hcl2/hcl"
@@ -23,9 +24,10 @@ type Worker struct {
 	Attribute string
 	Errors    []string
 	Scores    map[string]bool
+	Body      *hclsyntax.Body // Worker needs to review this body
 }
 
-func NewWorker(res string, attributes map[string][]string, path string) *Worker {
+func NewWorker(body *hclsyntax.Body, res string, attributes map[string][]string, path string) *Worker {
 	score := make(map[string]bool)
 	var att string
 
@@ -42,6 +44,75 @@ func NewWorker(res string, attributes map[string][]string, path string) *Worker 
 		Attribute: att,
 		Resource:  res,
 		Scores:    score,
+		Body:      body,
+	}
+}
+
+func GenerateWorkers(body *hclsyntax.Body, tasks []*Task, path string) []*Worker {
+	var workers []*Worker
+	if len(body.Blocks) > 0 {
+		for _, block := range body.Blocks {
+			if block.Type == "resource" && len(block.Labels) > 0 {
+				for _, w := range tasks {
+					if block.Labels[0] == w.Resource {
+						log.Infof("> Found %v %+v \n", w.Resource, strings.Join(block.Labels, " "))
+						// Deploy worker
+						worker := NewWorker(
+							block.Body,
+							strings.Join(block.Labels, " "),
+							w.AttributeKeys,
+							path,
+						)
+						workers = append(workers, worker)
+					}
+				}
+			}
+		}
+	}
+
+	return workers
+}
+
+// ValidateScore check if attributes and keys exist
+func (w *Worker) ValidateScore() {
+	var err []string
+	log.Infof("Score!: %+v\n", w.Scores)
+	for key, value := range w.Scores {
+		if !value {
+			if key == w.Attribute {
+				key = "attribute"
+			}
+			err = append(err, fmt.Sprintf("<%v %v> %v %v is missing ", w.Path,
+				w.Resource, key, w.Attribute))
+		}
+	}
+
+	w.Errors = err
+}
+
+// Verify goes through terraform file to look for attributes and keys
+func (w *Worker) VerifyBody() {
+	log.Infof("*Worker* starts to verify %+v\n", w)
+	if len(w.Body.Blocks) > 0 {
+		for _, block := range w.Body.Blocks {
+			if block.Type == w.Attribute {
+				log.Infof("> Found block %v\n", block.Type)
+				w.Scores[w.Attribute] = true
+				w.Body = block.Body
+				w.VerifyBody()
+			}
+
+		}
+	}
+
+	if len(w.Body.Attributes) > 0 {
+		for _, attr := range w.Body.Attributes {
+			if _, ok := w.Scores[attr.Name]; ok {
+				log.Infof("> Found attribue %v\n", attr.Name)
+				w.Scores[attr.Name] = true
+				w.ExpressionWalk(attr.Expr)
+			}
+		}
 	}
 }
 
@@ -77,19 +148,6 @@ func (w *Worker) ExpressionWalk(ex hcl.Expression) {
 	default:
 		log.Errorf("Unknown expression type %v \n", reflect.TypeOf(t))
 	}
-}
-
-func (w *Worker) ValidateScore() {
-	var err []string
-	log.Infof("Score!: %+v\n", w.Scores)
-	for key, value := range w.Scores {
-		if !value {
-			err = append(err, fmt.Sprintf("<%v %v> %v %v is missing ", w.Path,
-				w.Resource, key, w.Attribute))
-		}
-	}
-
-	w.Errors = err
 }
 
 func (w *Worker) traverseTypeWalk(v hcl.Traverser) {

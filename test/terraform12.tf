@@ -28,14 +28,6 @@ resource "aws_instance" main {
     volume_type = "gp2"
   }
 
-  lifecycle {
-    create_before_destroy = true
-    ignore_changes = [
-      ami,
-      user_data,
-      instance_type,
-    ]
-  }
 
   user_data = file("./user_data.sh")
 

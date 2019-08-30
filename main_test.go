@@ -1,45 +1,49 @@
 package main
 
 import (
-	"os"
-	"path/filepath"
+	"fmt"
+	"sort"
 	"strings"
 	"testing"
+
+	"github.com/shoukoo/tf-verifier/parser"
 )
 
 //Helpeor
+
+var (
+	_files = []string{"test/terraform.tf", "test/terraform12.tf"}
+)
 
 // errorMsg common error message format
 func errorMsg(t *testing.T, expected string, result interface{}) {
 	t.Errorf("Expecting %v but got %v", expected, result)
 }
 
-// getTerraformFiles to get all terraform files from test dir
-func getTerraformFiles(t *testing.T) []string {
-	var files []string
-	err := filepath.Walk("test/", func(path string, info os.FileInfo, err error) error {
+func prepareTest(t *testing.T) ([]*parser.Task, []parser.Body) {
 
-		// Ignore hidden files e.g. .terraform
-		if info.IsDir() && strings.HasPrefix(info.Name(), ".") {
-			return filepath.SkipDir
-		}
-
-		// Only includes terraform file
-		if filepath.Ext(info.Name()) == ".tf" {
-			files = append(files, path)
-		}
-
-		return nil
-	})
+	b, err := readConfig("test/example.yaml")
 
 	if err != nil {
-		t.Errorf("Unable to get the test files, reason: %v", err)
+		errorMsg(t, "to find test/example.yaml", err)
 	}
 
-	return files
+	tasks, err := parser.GenerateTasks(b)
+
+	if err != nil {
+		errorMsg(t, "error preparing tasks", len(tasks))
+	}
+
+	files = _files
+	bodies, err := parser.GetBodies(files)
+	if err != nil {
+		errorMsg(t, "error preparing body", len(tasks))
+	}
+
+	return tasks, bodies
 }
 
-// TestReadConfig
+// Test begins here
 func TestReadConfig(t *testing.T) {
 
 	_, err := readConfig("invalid")
@@ -56,7 +60,6 @@ func TestReadConfig(t *testing.T) {
 
 }
 
-// TestGetTask
 func TestGetTask(t *testing.T) {
 
 	b, err := readConfig("test/example.yaml")
@@ -65,7 +68,7 @@ func TestGetTask(t *testing.T) {
 		errorMsg(t, "to find test/example.yaml", err)
 	}
 
-	tasks, err := getTasks(b)
+	tasks, err := parser.GenerateTasks(b)
 
 	if len(tasks) != 2 {
 		errorMsg(t, "2 tasks", len(tasks))
@@ -73,17 +76,95 @@ func TestGetTask(t *testing.T) {
 
 }
 
-// TestGetHCLBodies
-func TestGetHCLBodies(t *testing.T) {
-	files := getTerraformFiles(t)
+func TestGetBodies(t *testing.T) {
 
-	bodies, err := getHCLBodies(files)
+	// Process Invalid Terraform file
+	files = []string{"test/invalid/terraform.tf"}
+	_, err := parser.GetBodies(files)
+	if err == nil {
+		errorMsg(t, "an error", "nil")
+	}
+
+	// Process valid Terraform file
+	files = _files
+
+	bodies, err := parser.GetBodies(files)
 
 	if err != nil {
 		errorMsg(t, "to parse terraform files sucessfully", err)
 	}
 
-	if len(bodies) != 2 {
-		errorMsg(t, "2 hclBody", len(bodies))
+	// Make sure all the files are being processed
+	for i, b := range bodies {
+		if files[i] != b.Path {
+			errorMsg(t, b.Path, files[i])
+		}
+	}
+
+}
+
+func TestGenerateWorkers(t *testing.T) {
+	tasks, bodies := prepareTest(t)
+	var workers []*parser.Worker
+	for _, b := range bodies {
+		w := parser.GenerateWorkers(b.Body, tasks, b.Path)
+		workers = append(workers, w...)
+	}
+
+	expect := &parser.Worker{
+		Path:      "test/terraform12.tf",
+		Resource:  "aws_instance main",
+		Attribute: "tags",
+		Scores: map[string]bool{
+			"tags":      false,
+			"Name":      false,
+			"terraform": false,
+		},
+	}
+
+	for _, w := range workers {
+		if w.Path == expect.Path && w.Attribute == expect.Attribute && w.Resource == expect.Resource {
+			for k := range expect.Scores {
+				if _, ok := w.Scores[k]; !ok {
+					errorMsg(t, fmt.Sprintf("can't find this key in the score %+v", k), expect)
+				}
+			}
+			return
+		}
+	}
+
+	errorMsg(t, fmt.Sprintf("can't find this worker %+v", expect), "null")
+
+}
+
+func TestValidateScore(t *testing.T) {
+	tasks, bodies := prepareTest(t)
+	var workers []*parser.Worker
+	for _, b := range bodies {
+		w := parser.GenerateWorkers(b.Body, tasks, b.Path)
+		workers = append(workers, w...)
+	}
+
+	var errs []string
+	for _, w := range workers {
+		w.VerifyBody()
+		w.ValidateScore()
+		if len(w.Errors) > 0 {
+			errs = append(errs, w.Errors...)
+		}
+	}
+
+	expect := []string{
+		"<test/terraform12.tf aws_instance main> create_before_destroy lifecycle is missing",
+		"<test/terraform12.tf aws_instance main> attribute lifecycle is missing",
+	}
+	sort.Strings(expect)
+	sort.Strings(errs)
+
+	for i, v := range errs {
+		v = strings.Trim(v, " ")
+		if v != expect[i] {
+			errorMsg(t, v, expect[i])
+		}
 	}
 }
