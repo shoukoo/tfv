@@ -70,7 +70,7 @@ func TestGetTask(t *testing.T) {
 
 	tasks, err := parser.GenerateTasks(b)
 
-	if len(tasks) != 1 {
+	if len(tasks) != 2 {
 		errorMsg(t, "2 tasks", len(tasks))
 	}
 
