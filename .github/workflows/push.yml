@@ -4,4 +4,5 @@ jobs:
   testing:
     name: Test Go 
     runs-on: ubuntu-latest
-    uses: actions/go1.11@master
+    steps:
+    - uses: actions/go1.11@master
