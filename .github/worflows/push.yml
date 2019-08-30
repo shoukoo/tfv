@@ -1,0 +1,7 @@
+on: push
+name: Build on Push
+jobs:
+  testing:
+    name: Test Go 
+    runs-on: ubuntu-latest
+    uses: actions/go1.11@master
