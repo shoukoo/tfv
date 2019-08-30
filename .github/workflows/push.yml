@@ -6,5 +6,5 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@master
-    - name: Testing  
+    - name: Go1.11 test
       uses: ./.github/actions/go1.11
