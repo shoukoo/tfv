@@ -7,4 +7,4 @@ jobs:
     steps:
     - uses: actions/checkout@master
     - name: Testing  
-      uses: ./github/actions/go1.11
+      uses: ./.github/actions/go1.11
