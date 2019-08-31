@@ -40,7 +40,7 @@ func GenerateTasks(b []byte) ([]*Task, error) {
 
 	tasks, err := PrepareTask(b)
 	if err != nil {
-		return nil, fmt.Errorf("Error preparing task %v", err)
+		return nil, fmt.Errorf("error preparing task %v", err)
 	}
 
 	return tasks, nil

@@ -19,7 +19,7 @@ func GetBodies(files []string) ([]Body, error) {
 	for _, f := range files {
 		path := string(f)
 		if _, err := os.Stat(path); err != nil {
-			return nil, fmt.Errorf("File does not exist: %s", path)
+			return nil, fmt.Errorf("file does not exist: %s", path)
 		}
 
 		log.Infof("Examining: %s", path)
