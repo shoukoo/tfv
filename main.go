@@ -7,36 +7,30 @@ import (
 	"strings"
 
 	"github.com/shoukoo/tf-verifier/parser"
-	flags "github.com/simonleung8/flags"
 	log "github.com/sirupsen/logrus"
+	"gopkg.in/alecthomas/kingpin.v2"
 )
 
 var (
-	debug  bool
-	config string
-	files  []string
+	debug  = kingpin.Flag("debug", "Enable debug mode.").Bool()
+	config = kingpin.Flag("config", "Configuration is a yaml file to tell tf-verfier what to check.").Default("tfv.yaml").String()
+	files  = kingpin.Arg("files", "List of terraform files eg. t1.tf t2.tf").Strings()
 )
-
-func init() {
-	f := flags.New()
-	f.NewBoolFlag("debug", "d", "debug mode")
-	f.NewStringFlagWithDefault("config", "c", "config file", "tf.yaml")
-	f.Parse(os.Args...)
-
-	debug = f.Bool("d")
-	config = f.String("c")
-	files = f.Args()[1:]
-
-	log.SetOutput(os.Stdout)
-	log.SetLevel(log.WarnLevel)
-	if debug {
-		log.SetLevel(log.DebugLevel)
-	}
-}
 
 func main() {
 
-	b, err := readConfig(config)
+	// Don't parse kingpin in init func, it conflicts with go test flags
+	kingpin.Version("0.0.1")
+	kingpin.Parse()
+
+	log.SetOutput(os.Stdout)
+	log.SetLevel(log.WarnLevel)
+	if *debug {
+		log.SetLevel(log.DebugLevel)
+	}
+
+	// Read Config
+	b, err := readConfig(*config)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -46,11 +40,11 @@ func main() {
 		log.Fatal(err)
 	}
 
-	if len(files) == 0 {
+	if len(*files) == 0 {
 		log.Fatal("List of terraform files not found")
 	}
 
-	bodies, err := parser.GetBodies(files)
+	bodies, err := parser.GetBodies(*files)
 	if err != nil {
 		log.Fatal(err)
 	}
