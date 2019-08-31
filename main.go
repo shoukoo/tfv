@@ -12,9 +12,9 @@ import (
 )
 
 var (
-	_debug  = kingpin.Flag("debug", "Enable debug mode.").Bool()
-	_config = kingpin.Flag("config", "Configuration is a yaml file to tell tf-verfier what to check.").Default("tfv.yaml").String()
-	_files  = kingpin.Arg("files", "List of terraform files eg. t1.tf t2.tf").Strings()
+	debug  = kingpin.Flag("debug", "Enable debug mode.").Bool()
+	config = kingpin.Flag("config", "Configuration is a yaml file to tell tf-verfier what to check.").Default("tfv.yaml").String()
+	files  = kingpin.Arg("files", "List of terraform files eg. t1.tf t2.tf").Strings()
 )
 
 func main() {
@@ -25,12 +25,12 @@ func main() {
 
 	log.SetOutput(os.Stdout)
 	log.SetLevel(log.WarnLevel)
-	if *_debug {
+	if *debug {
 		log.SetLevel(log.DebugLevel)
 	}
 
 	// Read Config
-	b, err := readConfig(*_config)
+	b, err := readConfig(*config)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -40,11 +40,11 @@ func main() {
 		log.Fatal(err)
 	}
 
-	if len(*_files) == 0 {
+	if len(*files) == 0 {
 		log.Fatal("List of terraform files not found")
 	}
 
-	bodies, err := parser.GetBodies(*_files)
+	bodies, err := parser.GetBodies(*files)
 	if err != nil {
 		log.Fatal(err)
 	}

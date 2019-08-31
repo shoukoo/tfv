@@ -12,7 +12,7 @@ import (
 //Helpeor
 
 var (
-	_testingFiles = []string{"test/terraform.tf", "test/terraform12.tf"}
+	testingFiles = []string{"test/terraform.tf", "test/terraform12.tf"}
 )
 
 // errorMsg common error message format
@@ -34,7 +34,7 @@ func prepareTest(t *testing.T) ([]*parser.Task, []parser.Body) {
 		errorMsg(t, "error preparing tasks", len(tasks))
 	}
 
-	files := _testingFiles
+	files := testingFiles
 	bodies, err := parser.GetBodies(files)
 	if err != nil {
 		errorMsg(t, "error preparing body", len(tasks))
@@ -86,7 +86,7 @@ func TestGetBodies(t *testing.T) {
 	}
 
 	// Process valid Terraform file
-	files = _testingFiles
+	files = testingFiles
 
 	bodies, err := parser.GetBodies(files)
 
