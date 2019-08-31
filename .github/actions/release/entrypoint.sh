@@ -10,9 +10,9 @@ UPLOAD_URL=$(echo $EVENT_DATA | jq -r .release.upload_url)
 UPLOAD_URL=${UPLOAD_URL/\{?name,label\}/}
 
 
-LINUX_BIN="tfv-linux-amd64-${RELEASE_NAME}"
-DARWIN_BIN="tfv-darwin-amd64-${RELEASE_NAME}"
-WINDOWS_BIN="tfv-windows-amd64-${RELEASE_NAME}.exe"
+LINUX_BIN="tfv-linux-amd64"
+DARWIN_BIN="tfv-darwin-amd64"
+WINDOWS_BIN="tfv-windows-amd64.exe"
 
 GOOS=linux GOARCH=amd64 go build -o $LINUX_BIN
 GOOS=darwin GOARCH=amd64 go build -o $DARWIN_BIN
