@@ -1,3 +1,5 @@
+https://github.com/shoukoo/tf-verifier/workflows/Build%20on%20Push/badge.svg
+
 # Terraform Verifier
 
 
