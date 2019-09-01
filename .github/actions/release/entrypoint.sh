@@ -18,8 +18,9 @@ GOOS=linux GOARCH=amd64 go build -o $LINUX_BIN
 GOOS=darwin GOARCH=amd64 go build -o $DARWIN_BIN
 GOOS=windows GOARCH=amd64 go build -o $WINDOWS_BIN
 
-for i in "$LINUX_BIN $DARWIN_BIN $WINDOWS_BIN"; do
+for i in $LINUX_BIN $DARWIN_BIN $WINDOWS_BIN; do
   curl \
+    --fail \
     -X POST \
     --data-binary @${i}\
     -H 'Content-Type: application/octet-stream' \
