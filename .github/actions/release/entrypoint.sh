@@ -26,4 +26,13 @@ for i in $LINUX_BIN $DARWIN_BIN $WINDOWS_BIN; do
     -H 'Content-Type: application/octet-stream' \
     -H "Authorization: Bearer ${GITHUB_TOKEN}" \
     "${UPLOAD_URL}?name=${i}"
+
+  CHECKSUM=$(md5sum $i | cut -d ' ' -f 1)
+
+  curl \
+    -X POST \
+    --data $CHECKSUM \
+    -H 'Content-Type: text/plain' \
+    -H "Authorization: Bearer ${GITHUB_TOKEN}" \
+    "${UPLOAD_URL}?name=${i}_checksum.txt"
 done
