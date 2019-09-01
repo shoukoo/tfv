@@ -20,7 +20,7 @@ var (
 func main() {
 
 	// Don't parse kingpin in init func, it conflicts with go test flags
-	kingpin.Version("0.0.1")
+	kingpin.Version("0.0.2")
 	kingpin.Parse()
 
 	log.SetOutput(os.Stdout)
