@@ -73,7 +73,7 @@ func main() {
 func readConfig(config string) ([]byte, error) {
 	b, err := ioutil.ReadFile(config)
 	if err != nil {
-		return nil, fmt.Errorf("Can't find config file %v", err)
+		return nil, fmt.Errorf("can't find config file %v", err)
 	}
 
 	return b, nil

@@ -1,10 +1,14 @@
 on: push
 name: Build on Push
 jobs:
-  testing:
+  go-test:
     name: Test Go 
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@master
+    - name: staticcheck
+      uses: ./.github/actions/staticcheck
+    - name: Go1.12 test
+      uses: ./.github/actions/go1.12
     - name: Go1.11 test
       uses: ./.github/actions/go1.11

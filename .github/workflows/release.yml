@@ -1,0 +1,12 @@
+on: release
+name: Build on release
+jobs:
+  build:
+    name: Build Go
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+    - name: release
+      uses: ./.github/actions/release
+      env: 
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
