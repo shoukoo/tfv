@@ -10,7 +10,7 @@ LABEL com.github.actions.description="Run Golang commands"
 LABEL com.github.actions.icon="mic"
 LABEL com.github.actions.color="yellow"
 
-RUN apt-get install git jq
+RUN apt-get update && apt-get install -y jq
 
 COPY entrypoint.sh /entrypoint.sh
 
