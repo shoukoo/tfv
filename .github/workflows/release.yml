@@ -8,5 +8,5 @@ jobs:
     - uses: actions/checkout@master
     - name: release
       uses: ./.github/actions/release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      env: 
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
