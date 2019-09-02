@@ -1,4 +1,6 @@
-# Terraform Verifier
+<img src="https://github.com/shoukoo/tfv/workflows/Build%20on%20Push/badge.svg" class="image mod-full-width" /> <img src="https://img.shields.io/github/v/release/shoukoo/tfv?sort=semver" class="image mod-full-width" />
+
+# TFV - Terraform Verifier
 
 
 ## HCL syntax validation
@@ -26,7 +28,7 @@ go build
 ## Usage
 
 ```
-tf-verifier --debug --config config.yaml path/to/file1.tf path/to/morefiles.tf
+tfv --debug --config config.yaml path/to/file1.tf path/to/morefiles.tf
 ```
 
 ## Example
