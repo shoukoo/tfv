@@ -1,4 +1,4 @@
-<img src="https://github.com/shoukoo/tf-verifier/workflows/Build%20on%20Push/badge.svg" class="image mod-full-width" /> <img src="https://img.shields.io/github/v/release/shoukoo/tf-verifier?sort=semver" class="image mod-full-width" />
+<img src="https://github.com/shoukoo/tfv/workflows/Build%20on%20Push/badge.svg" class="image mod-full-width" /> <img src="https://img.shields.io/github/v/release/shoukoo/tfv?sort=semver" class="image mod-full-width" />
 
 # TFV - Terraform Verifier
 
