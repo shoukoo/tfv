@@ -163,7 +163,7 @@ func (w *Worker) traverseTypeWalk(v hcl.Traverser) {
 			w.Scores[t.Name] = true
 		}
 	default:
-		log.Errorf("Unknown tarverser type %v \n", reflect.TypeOf(t))
+		log.Errorf("Unknown trarverser type %v \n", reflect.TypeOf(t))
 	}
 }
 
