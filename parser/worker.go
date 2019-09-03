@@ -95,9 +95,9 @@ func (w *Worker) VerifyBody() {
 	log.Infof("*Worker* starts to verify %+v\n", w)
 	if len(w.Body.Blocks) > 0 {
 		for _, block := range w.Body.Blocks {
-			if block.Type == w.Attribute {
+			if _, ok := w.Scores[block.Type]; ok {
 				log.Infof("> Found block %v\n", block.Type)
-				w.Scores[w.Attribute] = true
+				w.Scores[block.Type] = true
 				w.Body = block.Body
 				w.VerifyBody()
 			}

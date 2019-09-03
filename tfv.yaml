@@ -2,6 +2,10 @@ aws_instance:
   tags:
     - Name
     - terraform
-
-  lifecycle:
-    - create_before_destroy
+    
+aws_s3_bucket:
+  server_side_encryption_configuration:
+    - rule
+    - apply_server_side_encryption_by_default
+  server_side_encryption_configuration:
+    rule:

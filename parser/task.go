@@ -40,7 +40,29 @@ func GenerateTasks(b []byte) ([]*Task, error) {
 
 	tasks, err := PrepareTask(b)
 	if err != nil {
-		return nil, fmt.Errorf("error preparing task %v", err)
+		log.Errorf("error preparing task %v", err)
+		return nil, fmt.Errorf(
+			`
+Terraform Verifier only accepts this configuration format:
+		
+aws_resource:
+	attributes:
+	  - key1
+	  - key2
+	  - key3
+		
+example: if you want to check if see_algorithm exists in aws_s3_bucket resource
+
+terraform.tf
+server_side_encryption_configuration {
+	rule {
+	  apply_server_side_encryption_by_default {
+		kms_master_key_id = "${aws_kms_key.mykey.arn}"
+		sse_algorithm     = "aws:kms"
+	  }
+	}
+}
+		`)
 	}
 
 	return tasks, nil
