@@ -39,8 +39,19 @@ go run main.go --config tfv.yaml test/terraform.tf test/terraform12.tf
 
 ## Config syntax for config.yaml
 
-YAML syntax should mimic the layout of the HCL file, eg:
+TFV only accepts the following format in the config file
 
+```
+aws_resource:
+	main_key:
+		- key
+		- key
+		- key
+```
+
+### Examples
+
+A simple Configuration file looks like this:
 ```
 aws_instance:
   tags:
@@ -49,4 +60,26 @@ aws_instance:
 
   volume_tags:
     - Name
+```
+
+But you want to check if see_algorithm exists in aws_s3_bucket resource
+```
+terraform.tf
+server_side_encryption_configuration {
+	rule {
+	  apply_server_side_encryption_by_default {
+		kms_master_key_id = "${aws_kms_key.mykey.arn}"
+		sse_algorithm     = "aws:kms"
+	  }
+	}
+}
+```
+
+This is how you contructs the configuration file
+```
+aws_s3_bucket:
+	server_side_encryption_configuration:
+		- apply_server_side_encryption_by_default
+		- kms_master_key_id
+		- sse_algorithm
 ```
