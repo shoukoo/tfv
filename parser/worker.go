@@ -157,8 +157,13 @@ func (w *Worker) traverseTypeWalk(v hcl.Traverser) {
 			log.Infof("> Found Key %v", t.Name)
 			w.Scores[t.Name] = true
 		}
+	case hcl.TraverseAttr:
+		if _, ok := w.Scores[t.Name]; ok {
+			log.Infof("> Found Key %v", t.Name)
+			w.Scores[t.Name] = true
+		}
 	default:
-		log.Errorf("Unknown tarverser type %v \n", reflect.TypeOf(t))
+		log.Errorf("Unknown trarverser type %v \n", reflect.TypeOf(t))
 	}
 }
 

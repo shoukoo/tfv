@@ -74,8 +74,8 @@ func TestGetTask(t *testing.T) {
 		errorMsg(t, "to see some tasks", err)
 	}
 
-	if len(tasks) != 2 {
-		errorMsg(t, "2 tasks", len(tasks))
+	if len(tasks) != 3 {
+		errorMsg(t, "3 tasks", len(tasks))
 	}
 
 }
