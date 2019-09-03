@@ -5,3 +5,8 @@ aws_instance:
 
   lifecycle:
     - create_before_destroy
+
+aws_s3_bucket:
+  logging:
+    - target_bucket
+    - target_prefix

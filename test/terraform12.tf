@@ -35,3 +35,12 @@ resource "aws_instance" main {
     command = "../wait_for_user_data.sh ${self.public_ip}"
   }
 }
+
+resource aws_s3_bucket main {
+
+  logging {
+    target_bucket = "${aws_s3_bucket.log_bucket.id}"
+    target_prefix = "log/"
+  }
+
+}
