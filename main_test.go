@@ -74,8 +74,8 @@ func TestGetTask(t *testing.T) {
 		errorMsg(t, "to see some tasks", err)
 	}
 
-	if len(tasks) != 3 {
-		errorMsg(t, "3 tasks", len(tasks))
+	if len(tasks) != 4 {
+		errorMsg(t, "4 tasks", len(tasks))
 	}
 
 }
@@ -126,11 +126,30 @@ func TestGenerateWorkers(t *testing.T) {
 		},
 	}
 
+	expect2 := &parser.Worker{
+		Path:      "test/terraform12.tf",
+		Resource:  "aws_s3_bucket main",
+		Attribute: "server_side_encryption_configuration",
+		Scores: map[string]bool{
+			"rule": false,
+			"apply_server_side_encryption_by_defaultapply_server_side_encryption_by_default": false,
+			"kms_master_key_id": false,
+		},
+	}
+
 	for _, w := range workers {
 		if w.Path == expect.Path && w.Attribute == expect.Attribute && w.Resource == expect.Resource {
 			for k := range expect.Scores {
 				if _, ok := w.Scores[k]; !ok {
 					errorMsg(t, fmt.Sprintf("can't find this key in the score %+v", k), expect)
+				}
+			}
+			return
+		}
+		if w.Path == expect2.Path && w.Attribute == expect2.Attribute && w.Resource == expect2.Resource {
+			for k := range expect2.Scores {
+				if _, ok := w.Scores[k]; !ok {
+					errorMsg(t, fmt.Sprintf("can't find this key in the score %+v", k), expect2)
 				}
 			}
 			return

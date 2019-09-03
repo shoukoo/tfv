@@ -11,7 +11,6 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/fatih/color"
 	"github.com/hashicorp/hcl2/hcl"
 	"github.com/hashicorp/hcl2/hcl/hclsyntax"
 	log "github.com/sirupsen/logrus"
@@ -146,7 +145,7 @@ func (w *Worker) ExpressionWalk(ex hcl.Expression) {
 			w.ExpressionWalk(e)
 		}
 	default:
-		log.Errorf("Unknown expression type %v \n", reflect.TypeOf(t))
+		log.Warnf("Unknown expression type %v \n", reflect.TypeOf(t))
 	}
 }
 
@@ -163,7 +162,7 @@ func (w *Worker) traverseTypeWalk(v hcl.Traverser) {
 			w.Scores[t.Name] = true
 		}
 	default:
-		log.Errorf("Unknown trarverser type %v \n", reflect.TypeOf(t))
+		log.Warnf("Unknown trarverser type %v \n", reflect.TypeOf(t))
 	}
 }
 
@@ -182,7 +181,7 @@ func valueTypeWalk(t cty.Value) {
 	case cty.EmptyTuple:
 		log.Infof("empty tuple type %v \n", t)
 	default:
-		log.Infof(color.RedString("unknown value type %v\n"), reflect.TypeOf(t))
+		log.Warnf("unknown value type %v\n", reflect.TypeOf(t))
 	}
 }
 
