@@ -7,4 +7,4 @@ jobs:
     steps:
     - uses: actions/checkout@master
     - name: staticcheck
-      uses: shoukoo/golang-pipeline@master
+      uses: shoukoo/golang-pipeline/staticcheck@master
