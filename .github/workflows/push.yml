@@ -1,5 +1,5 @@
 on: push
-name: Build on Push
+name: build
 jobs:
   go-test:
     name: Test Go 
@@ -7,8 +7,4 @@ jobs:
     steps:
     - uses: actions/checkout@master
     - name: staticcheck
-      uses: ./.github/actions/staticcheck
-    - name: Go1.12 test
-      uses: ./.github/actions/go1.12
-    - name: Go1.11 test
-      uses: ./.github/actions/go1.11
+      uses: shoukoo/golang-pipeline@master
