@@ -1,0 +1,4 @@
+aws_instance:
+  tags:
+    - 1233 
+    - 1233333

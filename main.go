@@ -52,12 +52,14 @@ func main() {
 	var workers []*parser.Worker
 	for _, b := range bodies {
 		ws := parser.GenerateWorkers(b.Body, tasks, b.Path)
+		for _, w := range ws {
+			w.VerifyBody(b.Body)
+		}
 		workers = append(workers, ws...)
 	}
 
 	var errs []string
 	for _, w := range workers {
-		w.VerifyBody()
 		w.ValidateScore()
 		if len(w.Errors) > 0 {
 			errs = append(errs, strings.Join(w.Errors, "\n"))
@@ -75,6 +77,5 @@ func readConfig(config string) ([]byte, error) {
 	if err != nil {
 		return nil, fmt.Errorf("can't find config file %v", err)
 	}
-
 	return b, nil
 }

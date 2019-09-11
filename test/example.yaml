@@ -12,6 +12,7 @@ aws_s3_bucket:
     - target_prefix
 
   server_side_encryption_configuration:
-    - rule
-    - apply_server_side_encryption_by_default
-    - kms_master_key_id
+    - rule:
+      - apply_server_side_encryption_by_default:
+        - kms_master_key_id
+        - sse_algorithm
