@@ -8,5 +8,6 @@ jobs:
     - uses: actions/checkout@master
     - name: release
       uses: shoukoo/golang-pipeline/release@master
+      if: github.event.action == 'published'
       env: 
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
