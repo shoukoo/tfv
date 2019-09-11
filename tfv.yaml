@@ -1,0 +1,18 @@
+aws_instance:
+  tags:
+    - Name
+    - terraform
+
+  lifecycle:
+    - create_before_destroy
+
+aws_s3_bucket:
+  logging:
+    - target_bucket
+    - target_prefix
+
+  server_side_encryption_configuration:
+    - rule:
+      - apply_server_side_encryption_by_default:
+        - kms_master_key_id
+        - sse_algorithm
