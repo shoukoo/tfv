@@ -78,7 +78,7 @@ func TestGetTask(t *testing.T) {
 		errorMsg(t, "4 tasks", len(tasks))
 	}
 
-	b2, err := readConfig("test/invalid/example.yaml")
+	b2, _ := readConfig("test/invalid/example.yaml")
 
 	_, err = parser.GenerateTasks(b2)
 
