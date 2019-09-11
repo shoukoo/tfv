@@ -74,8 +74,16 @@ func TestGetTask(t *testing.T) {
 		errorMsg(t, "to see some tasks", err)
 	}
 
-	if len(tasks) != 3 {
-		errorMsg(t, "3 tasks", len(tasks))
+	if len(tasks) != 4 {
+		errorMsg(t, "4 tasks", len(tasks))
+	}
+
+	b2, _ := readConfig("test/invalid/example.yaml")
+
+	_, err = parser.GenerateTasks(b2)
+
+	if err == nil {
+		errorMsg(t, "to have tfv can't handle int in the configuration file error", err)
 	}
 
 }
@@ -111,33 +119,52 @@ func TestGenerateWorkers(t *testing.T) {
 	tasks, bodies := prepareTest(t)
 	var workers []*parser.Worker
 	for _, b := range bodies {
-		w := parser.GenerateWorkers(b.Body, tasks, b.Path)
-		workers = append(workers, w...)
+		ws := parser.GenerateWorkers(b.Body, tasks, b.Path)
+		workers = append(workers, ws...)
 	}
 
 	expect := &parser.Worker{
 		Path:      "test/terraform12.tf",
 		Resource:  "aws_instance main",
 		Attribute: "tags",
-		Scores: map[string]bool{
+		Scorecard: map[string]bool{
 			"tags":      false,
 			"Name":      false,
 			"terraform": false,
 		},
 	}
 
-	for _, w := range workers {
-		if w.Path == expect.Path && w.Attribute == expect.Attribute && w.Resource == expect.Resource {
-			for k := range expect.Scores {
-				if _, ok := w.Scores[k]; !ok {
-					errorMsg(t, fmt.Sprintf("can't find this key in the score %+v", k), expect)
-				}
-			}
-			return
-		}
+	expect2 := &parser.Worker{
+		Path:      "test/terraform12.tf",
+		Resource:  "aws_s3_bucket main",
+		Attribute: "server_side_encryption_configuration",
+		Scorecard: map[string]bool{
+			"rule": false,
+			"apply_server_side_encryption_by_default": false,
+			"kms_master_key_id":                       false,
+		},
 	}
 
-	errorMsg(t, fmt.Sprintf("can't find this worker %+v", expect), "null")
+	if len(workers) == 0 {
+		t.Errorf("0 workers to test TestGenerateWorkers")
+	}
+
+	for _, w := range workers {
+		if w.Path == expect.Path && w.Attribute == expect.Attribute && w.Resource == expect.Resource {
+			for k := range expect.Scorecard {
+				if _, ok := w.Scorecard[k]; !ok {
+					errorMsg(t, fmt.Sprintf("can't find this key in the scorecard %+v", k), expect)
+				}
+			}
+		}
+		if w.Path == expect2.Path && w.Attribute == expect2.Attribute && w.Resource == expect2.Resource {
+			for k := range expect2.Scorecard {
+				if _, ok := w.Scorecard[k]; !ok {
+					errorMsg(t, fmt.Sprintf("can't find this key in the scorecard %+v", k), expect2)
+				}
+			}
+		}
+	}
 
 }
 
@@ -145,13 +172,15 @@ func TestValidateScore(t *testing.T) {
 	tasks, bodies := prepareTest(t)
 	var workers []*parser.Worker
 	for _, b := range bodies {
-		w := parser.GenerateWorkers(b.Body, tasks, b.Path)
-		workers = append(workers, w...)
+		ws := parser.GenerateWorkers(b.Body, tasks, b.Path)
+		for _, w := range ws {
+			w.VerifyBody(b.Body)
+		}
+		workers = append(workers, ws...)
 	}
 
 	var errs []string
 	for _, w := range workers {
-		w.VerifyBody()
 		w.ValidateScore()
 		if len(w.Errors) > 0 {
 			errs = append(errs, w.Errors...)
