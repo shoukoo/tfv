@@ -78,8 +78,9 @@ server_side_encryption_configuration {
 This is how you contructs the configuration file
 ```
 aws_s3_bucket:
-	server_side_encryption_configuration:
-		- apply_server_side_encryption_by_default
-		- kms_master_key_id
-		- sse_algorithm
+  server_side_encryption_configuration:
+    - rule:
+      - apply_server_side_encryption_by_default:
+        - kms_master_key_id
+        - sse_algorithm
 ```

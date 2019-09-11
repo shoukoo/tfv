@@ -140,9 +140,13 @@ func TestGenerateWorkers(t *testing.T) {
 		Attribute: "server_side_encryption_configuration",
 		Scorecard: map[string]bool{
 			"rule": false,
-			"apply_server_side_encryption_by_defaultapply_server_side_encryption_by_default": false,
-			"kms_master_key_id": false,
+			"apply_server_side_encryption_by_default": false,
+			"kms_master_key_id":                       false,
 		},
+	}
+
+	if len(workers) == 0 {
+		t.Errorf("0 workers to test TestGenerateWorkers")
 	}
 
 	for _, w := range workers {
@@ -152,7 +156,6 @@ func TestGenerateWorkers(t *testing.T) {
 					errorMsg(t, fmt.Sprintf("can't find this key in the scorecard %+v", k), expect)
 				}
 			}
-			return
 		}
 		if w.Path == expect2.Path && w.Attribute == expect2.Attribute && w.Resource == expect2.Resource {
 			for k := range expect2.Scorecard {
@@ -160,11 +163,8 @@ func TestGenerateWorkers(t *testing.T) {
 					errorMsg(t, fmt.Sprintf("can't find this key in the scorecard %+v", k), expect2)
 				}
 			}
-			return
 		}
 	}
-
-	errorMsg(t, fmt.Sprintf("can't find this worker %+v", expect), "null")
 
 }
 
