@@ -5,9 +5,24 @@ jobs:
     name: Build Go
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@master
-    - name: release
+    - name: osx build
       uses: shoukoo/golang-pipeline/release@master
       if: github.event.action == 'published'
       env: 
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GOOS: linux
+        GOARCH: amd64
+    - name: windows build
+      uses: shoukoo/golang-pipeline/release@master
+      if: github.event.action == 'published'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GOOS: windows
+        GOARCH: amd64
+    - name: linux build
+      uses: shoukoo/golang-pipeline/release@master
+      if: github.event.action == 'published'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GOOS: linux
+        GOARCH: amd64
