@@ -6,9 +6,5 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@master
-    - name: staticcheck
-      uses: shoukoo/golang-pipeline/staticcheck@master
     - name: go1.11
-      uses: shoukoo/golang-pipeline/go1.11/gotest@improvement
-    - name: go1.12
-      uses: shoukoo/golang-pipeline/go1.12@master
+      uses: shoukoo/golang-pipeline/go1.11/linter@improvement
