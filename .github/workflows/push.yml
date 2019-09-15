@@ -2,7 +2,7 @@ on: push
 name: build
 jobs:
   go-test:
-    name: Test Go 
+    name: Go Test
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@master
