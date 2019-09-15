@@ -5,6 +5,7 @@ jobs:
     name: Go Build
     runs-on: ubuntu-latest
     steps:
+    - uses: actions/checkout@master
     - name: osx build
       uses: shoukoo/golang-pipeline/go1.12/release@improvement
       if: github.event.action == 'published'
