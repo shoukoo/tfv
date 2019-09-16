@@ -7,10 +7,10 @@ jobs:
     steps:
     - uses: actions/checkout@master
     - name: go1.11 linters
-      uses: shoukoo/golang-pipeline/go1.11/linter@improvement
+      uses: shoukoo/golang-pipeline/go1.11/linter@master
     - name: go1.11 test
-      uses: shoukoo/golang-pipeline/go1.11/test@improvement
+      uses: shoukoo/golang-pipeline/go1.11/test@master
     - name: go1.12 test
-      uses: shoukoo/golang-pipeline/go1.11/test@improvement
+      uses: shoukoo/golang-pipeline/go1.11/test@master
     - name: go1.13 test
-      uses: shoukoo/golang-pipeline/go1.11/test@improvement
+      uses: shoukoo/golang-pipeline/go1.11/test@master
