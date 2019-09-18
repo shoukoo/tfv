@@ -2,11 +2,28 @@ on: release
 name: Build on release
 jobs:
   build:
-    name: Build Go
+    name: Go Build
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@master
-    - name: release
-      uses: shoukoo/golang-pipeline/release@master
+    - name: osx build
+      uses: shoukoo/golang-pipeline/go1.12/release@master
+      if: github.event.action == 'published'
       env: 
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GOOS: darwin
+        GOARCH: amd64
+    - name: windows build
+      uses: shoukoo/golang-pipeline/go1.12/release@master
+      if: github.event.action == 'published'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GOOS: windows
+        GOARCH: amd64
+    - name: linux build
+      uses: shoukoo/golang-pipeline/go1.12/release@master
+      if: github.event.action == 'published'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GOOS: linux
+        GOARCH: amd64

@@ -59,7 +59,7 @@ func GenerateWorkers(body *hclsyntax.Body, tasks []*Task, path string) []*Worker
 	return workers
 }
 
-func (w *Worker) generateScorecard(value interface{}) error {
+func (w *Worker) generateScorecard(value interface{}) {
 	switch v := reflect.ValueOf(value); v.Kind() {
 	case reflect.Slice:
 		for i := 0; i < v.Len(); i++ {
@@ -73,9 +73,8 @@ func (w *Worker) generateScorecard(value interface{}) error {
 	case reflect.String:
 		w.Scorecard[v.String()] = false
 	default:
-		return fmt.Errorf("tfs doesn't handle %s type", v.Kind())
+		log.Warnf("tfs doesn't handle %s type", v.Kind())
 	}
-	return nil
 }
 
 // ValidateScore check if attributes and keys exist
