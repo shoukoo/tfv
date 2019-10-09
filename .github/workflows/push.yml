@@ -5,6 +5,7 @@ jobs:
     name: Go Test
     runs-on: ubuntu-latest
     steps:
+    - uses: actions/checkout@master
     - name: go1.11 linters
       uses: shoukoo/golang-pipeline/go1.11/linter@master
     - name: go1.11 test
